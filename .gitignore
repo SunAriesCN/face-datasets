@@ -60,4 +60,6 @@ Desktop.ini
 # OSX dir files
 .DS_Store
 
+*.prototxt
+*.caffemodel
 

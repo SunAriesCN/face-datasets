@@ -316,8 +316,8 @@ class MtcnnDetector(object):
                     use accurate landmark localization or not
 
         """
-        caffe.set_mode_gpu()
-        caffe.set_device(gpu_id)
+#        caffe.set_mode_gpu()
+#        caffe.set_device(gpu_id)
         cwd = os.path.abspath(os.path.dirname(__file__))
         model_folder = cwd + '/model/'
         # Load models.

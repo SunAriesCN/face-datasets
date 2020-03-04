@@ -22,8 +22,12 @@ from distance import get_distance
 def parse_line(line):
     splits = line.split()
     # skip line
-    if len(splits) < 3:
+    if len(splits) < 2:
         return None
+
+    if len(splits) == 2:
+        return int(splits[0]), int(splits[1])
+
     # name id1 id2
     if len(splits) == 3:
         return True, splits[0], splits[1], splits[0], splits[2]
@@ -64,15 +68,26 @@ def load_ytf_pairs(path, prefix):
     return pos_img, neg_img
     
     
-def load_image_paris(pair_path, prefix):
+def load_image_pairs(pair_path, prefix):
     pair_list = []
-    # parse pairs
+    num_of_folds = -1 
+    pairs_of_each_fold = -1
+    # parse pairs 
     with open(pair_path, 'r') as f:
         for line in f.readlines():
             pair = parse_line(line)
+            if len(pair) == 2:
+                num_of_folds = pair[0]
+                pairs_of_each_fold = pair[1]
+                continue
+
             if pair is not None:
                 pair_list.append(pair)
                 # print(pair)
+
+    # protect error pairs file
+    assert num_of_folds > 0
+
     #print('#pairs:%d' % len(pair_list))
     # compute feature
     pos_img = []
@@ -97,7 +112,7 @@ def load_image_paris(pair_path, prefix):
             pos_img.append([img1, img2, rel_path1, rel_path2])
         else:
             neg_img.append([img1, img2, rel_path1, rel_path2])
-    return pos_img, neg_img
+    return pos_img, neg_img, num_of_folds
         
         
 def extract_feature(extractor, img_list):
@@ -251,7 +266,7 @@ if __name__ == '__main__':
         #pos_img, neg_img = pickle.load(open(lfw_data, 'rb'), encoding='iso-8859-1')
     else:
         if args.test_set == 'lfw':
-            pos_img, neg_img = load_image_paris(args.data, args.prefix)
+            pos_img, neg_img, num_of_fold = load_image_pairs(args.data, args.prefix)
         else:
             pos_img, neg_img = load_ytf_pairs(args.data, args.prefix)
         
@@ -269,7 +284,7 @@ if __name__ == '__main__':
 
     # evaluate
     print('Evaluating ...')
-    precision, std, threshold, pos, neg = verification(pos_list, neg_list, dist_type = dist_type)    
+    precision, std, threshold, pos, neg = verification(pos_list, neg_list, num_of_fold, dist_type = dist_type)    
     _, title = os.path.split(extractor.weight)
     #draw_chart(title, output_dir, {'pos': pos, 'neg': neg}, precision, threshold)
     print('------------------------------------------------------------')

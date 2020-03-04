@@ -77,6 +77,9 @@ def test_kfold(pos_list, neg_list, k = 10):
             else:
                 test_pos.append(pos_list[j])
                 test_neg.append(neg_list[j])
+
+        print('val_pos_size:{}, val_neg_size:{}'.format(len(val_pos),len(val_neg)))
+        print('test_pos_size:{}, test_neg_size:{}'.format(len(test_pos),len(test_neg)))
         precision, threshold = find_threshold_sort(val_pos, val_neg)
         accuracy = get_accuracy(test_pos, test_neg, threshold)
         accu_list.append(accuracy)
@@ -88,7 +91,7 @@ def test_kfold(pos_list, neg_list, k = 10):
     return sum_acc/sum_n, sum_thresh/sum_n, accu_list
 
 
-def verification(pos_list, neg_list, dist_type = 'L2'):
+def verification(pos_list, neg_list, k = 10, dist_type = 'L2'):
     '''
     [ 
       [feat1, feat2, ..],
@@ -112,7 +115,7 @@ def verification(pos_list, neg_list, dist_type = 'L2'):
     for i in neg_list:
         dist = dist_func(i[0], i[1])
         neg_dist.append([dist])
-    precision, threshold, accu_list = test_kfold(pos_dist, neg_dist)
+    precision, threshold, accu_list = test_kfold(pos_dist, neg_dist, k)
     pos = sorted(pos_dist, key=lambda x: x[0])
     neg = sorted(neg_dist, key=lambda x: x[0], reverse=True)
     pos = [x[0] for x in pos]

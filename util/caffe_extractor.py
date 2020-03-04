@@ -9,8 +9,8 @@ import numpy as np
 
 class CaffeExtractor:
     def __init__(self,model,weight,do_mirror=False,featLayer='fc5', gpu_id = 0):
-        caffe.set_mode_gpu()
-        caffe.set_device(gpu_id)
+#        caffe.set_mode_gpu()
+#        caffe.set_device(gpu_id)
 
         self.featLayer = featLayer
         self.model = model
