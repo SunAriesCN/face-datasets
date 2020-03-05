@@ -15,9 +15,20 @@ from plot import draw_chart
 import sys
 sys.path.insert(0, '../facealign')
 sys.path.insert(0, '../util') 
-  
-from caffe_extractor import CaffeExtractor
+
 from distance import get_distance
+
+try:
+    from caffe_extractor import CaffeExtractor
+except:
+    print("It's not in Caffe Environment.")
+    CaffeExtractor = None
+
+if CaffeExtractor is None:
+    try:
+        from tflite_extractor import TFLiteExtractor
+    except:
+        print("There is no suitable environment.")
 
 def parse_line(line):
     splits = line.split()
@@ -134,8 +145,8 @@ def extract_feature(extractor, img_list):
 def crop_image_list(img_list, imsize):
     out_list = []
     h, w, c = img_list[0][0].shape
-    x1 = (w - imsize[0])/2
-    y1 = (h - imsize[1])/2
+    x1 = (w - imsize[0])//2
+    y1 = (h - imsize[1])//2
     for pair in img_list:
         img1 = pair[0]
         img2 = pair[1]
@@ -208,6 +219,12 @@ def model_mobileface(do_mirror):
     extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc1')
     return extractor, image_size
 
+def model_lattemindface(do_mirror):
+    model_dir = './models/lattemindface/'
+    model_path = os.path.join(model_dir, 'optimized_graph.tflite')
+    image_size = (112, 112)
+    extractor = TFLiteExtractor(model_path) 
+    return extractor, image_size
         
 def model_yours(do_mirror):
     model_dir = '/path/to/your/model/'
@@ -225,6 +242,7 @@ def model_factory(name, do_mirror):
         'AMSoftmax' :model_AMSoftmax, 
         'arcface'   :model_arcface,
         'mobileface':model_mobileface, 
+        'lattemindface':model_lattemindface,
         'yours'     :model_yours, 
     }
     model_func = model_dict[name]
@@ -285,7 +303,7 @@ if __name__ == '__main__':
     # evaluate
     print('Evaluating ...')
     precision, std, threshold, pos, neg = verification(pos_list, neg_list, num_of_fold, dist_type = dist_type)    
-    _, title = os.path.split(extractor.weight)
+    title = model_name
     #draw_chart(title, output_dir, {'pos': pos, 'neg': neg}, precision, threshold)
     print('------------------------------------------------------------')
     print('Precision on %s : %1.5f+-%1.5f \nBest threshold   : %f' % (args.test_set, precision, std, threshold))

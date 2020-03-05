@@ -62,4 +62,4 @@ Desktop.ini
 
 *.prototxt
 *.caffemodel
-
+*.tflite
