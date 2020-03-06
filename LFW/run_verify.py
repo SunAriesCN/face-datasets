@@ -219,12 +219,6 @@ def model_mobileface(do_mirror):
     extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc1')
     return extractor, image_size
 
-def model_lattemindface(do_mirror):
-    model_dir = './models/lattemindface/'
-    model_path = os.path.join(model_dir, 'optimized_graph.tflite')
-    image_size = (112, 112)
-    extractor = TFLiteExtractor(model_path) 
-    return extractor, image_size
         
 def model_yours(do_mirror):
     model_dir = '/path/to/your/model/'
@@ -302,11 +296,10 @@ if __name__ == '__main__':
 
     # evaluate
     print('Evaluating ...')
-    precision, std, threshold, pos, neg = verification(pos_list, neg_list, num_of_fold, dist_type = dist_type)    
+    accuracy, std, threshold, pos, neg = verification(pos_list, neg_list, num_of_fold, dist_type = dist_type)    
     title = model_name
     #draw_chart(title, output_dir, {'pos': pos, 'neg': neg}, precision, threshold)
     print('------------------------------------------------------------')
-    print('Precision on %s : %1.5f+-%1.5f \nBest threshold   : %f' % (args.test_set, precision, std, threshold))
+    print('Accuracy on %s : %1.5f+-%1.5f \nBest threshold   : %f' % (args.test_set, accuracy, std, threshold))
    
    
-

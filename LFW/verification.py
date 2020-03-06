@@ -42,8 +42,8 @@ def get_accuracy(pos_list,neg_list,threshold):
     for i in range(neg_count):
         if neg_list[i][0] > threshold:
             correct += 1
-    precision = float(correct) / (pos_count + neg_count)
-    return precision
+    accuracy = float(correct) / (pos_count + neg_count)
+    return accuracy
 
 
 def best_threshold(pos_list, neg_list, thrNum = 10000):
@@ -87,7 +87,7 @@ def test_kfold(pos_list, neg_list, k = 10):
         sum_thresh += threshold
         sum_n += 1
         # verbose
-        print('precision:%.4f threshold:%f' % (accuracy, threshold))
+        print('precision:%.4f threshold:%f accuracy:%.4f' % (precision, threshold, accuracy))
     return sum_acc/sum_n, sum_thresh/sum_n, accu_list
 
 
@@ -115,7 +115,7 @@ def verification(pos_list, neg_list, k = 10, dist_type = 'L2'):
     for i in neg_list:
         dist = dist_func(i[0], i[1])
         neg_dist.append([dist])
-    precision, threshold, accu_list = test_kfold(pos_dist, neg_dist, k)
+    average_accuracy, threshold, accu_list = test_kfold(pos_dist, neg_dist, k)
     pos = sorted(pos_dist, key=lambda x: x[0])
     neg = sorted(neg_dist, key=lambda x: x[0], reverse=True)
     pos = [x[0] for x in pos]
