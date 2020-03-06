@@ -219,6 +219,12 @@ def model_mobileface(do_mirror):
     extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc1')
     return extractor, image_size
 
+def model_lattemindface(do_mirror):
+    model_dir = './models/lattemindface/'
+    model_path = os.path.join(model_dir, 'optimized_graph.tflite')
+    image_size = (112, 112)
+    extractor = TFLiteExtractor(model_path)
+    return extractor, image_size
         
 def model_yours(do_mirror):
     model_dir = '/path/to/your/model/'
@@ -228,7 +234,7 @@ def model_yours(do_mirror):
     extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc5')
     return extractor, image_size
 
-    
+
 def model_factory(name, do_mirror):
     model_dict = {
         'centerface':model_centerface, 
