@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
 import os
-import ConfigParser
+try:
+    import ConfigParser
+    config = ConfigParser.ConfigParser()
+except:
+    import configparser
+    config = configparser.ConfigParser()
 
 class OperationalError(Exception):
     """operation error."""
-
 
 class Dictionary(dict):
     """ custom dict."""
@@ -22,7 +26,7 @@ class Config:
         @param file_name: file name without extension.
         @param cfg: configuration file path.
         """
-        config = ConfigParser.ConfigParser()
+        
         config.read(cfg)
 
         for section in config.sections():

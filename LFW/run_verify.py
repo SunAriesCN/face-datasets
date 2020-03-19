@@ -16,19 +16,9 @@ import sys
 sys.path.insert(0, '../facealign')
 sys.path.insert(0, '../util') 
 
+from models import model_factory
+
 from distance import get_distance
-
-try:
-    from caffe_extractor import CaffeExtractor
-except:
-    print("It's not in Caffe Environment.")
-    CaffeExtractor = None
-
-if CaffeExtractor is None:
-    try:
-        from tflite_extractor import TFLiteExtractor
-    except:
-        print("There is no suitable environment.")
 
 def parse_line(line):
     splits = line.split()
@@ -158,96 +148,21 @@ def crop_image_list(img_list, imsize):
     
     
 def load_bin(path, image_size):
-  import mxnet as mx
-  bins, issame_list = pickle.load(open(path, 'rb'))
-  pos_img = []
-  neg_img = []
-  for i in xrange(len(issame_list)):
-    _bin = bins[i*2]
-    img1 = mx.image.imdecode(_bin)
-    _bin = bins[i*2+1]
-    img2 = mx.image.imdecode(_bin)
-    if issame_list[i]:
-      pos_img.append([img1, img2])
-    else:
-      neg_img.append([img2, img2])
-  return pos_img, neg_img
-
-
-def model_centerface(do_mirror):
-    model_dir = './models/centerface/'
-    model_proto = model_dir + 'face_deploy.prototxt'
-    model_path = model_dir + 'face_model.caffemodel'
-    image_size = (96, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc5')
-    return extractor, image_size
-    
-def model_sphereface(do_mirror):
-    model_dir = './models/sphereface/'
-    model_proto = model_dir + 'sphereface_deploy.prototxt'
-    model_path = model_dir + 'sphereface_model.caffemodel'
-    image_size = (96, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc5')
-    return extractor, image_size
-    
-def model_AMSoftmax(do_mirror):
-    model_dir = './models/AMSoftmax/'
-    if do_mirror:
-        model_proto = model_dir + 'face_deploy_mirror_normalize.prototxt'
-    else:
-        model_proto = model_dir + 'deploy.prototxt'
-    model_path = model_dir + 'face_train_test_iter_30000.caffemodel'
-    image_size = (96, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = False, featLayer='fc5')
-    return extractor, image_size
-    
-    
-def model_arcface(do_mirror):
-    model_dir = './models/arcface/'
-    model_proto = model_dir + 'model.prototxt'
-    model_path = model_dir + 'model-r50-am.caffemodel'
-    image_size = (112, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc1')
-    return extractor, image_size
-    
-
-def model_mobileface(do_mirror):
-    model_dir = './models/mobilefacenet/'
-    model_proto = model_dir + 'mobilefacenet-res2-6-10-2-dim128-opencv.prototxt'
-    model_path = model_dir + 'mobilefacenet-res2-6-10-2-dim128.caffemodel'
-    image_size = (112, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc1')
-    return extractor, image_size
-
-def model_lattemindface(do_mirror):
-    model_dir = './models/lattemindface/'
-    model_path = os.path.join(model_dir, 'optimized_graph.tflite')
-    image_size = (112, 112)
-    extractor = TFLiteExtractor(model_path)
-    return extractor, image_size
-        
-def model_yours(do_mirror):
-    model_dir = '/path/to/your/model/'
-    model_proto = model_dir + 'deploy.prototxt'
-    model_path = model_dir + 'weights.caffemodel'
-    image_size = (112, 112)
-    extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc5')
-    return extractor, image_size
-
-
-def model_factory(name, do_mirror):
-    model_dict = {
-        'centerface':model_centerface, 
-        'sphereface':model_sphereface, 
-        'AMSoftmax' :model_AMSoftmax, 
-        'arcface'   :model_arcface,
-        'mobileface':model_mobileface, 
-        'lattemindface':model_lattemindface,
-        'yours'     :model_yours, 
-    }
-    model_func = model_dict[name]
-    return model_func(do_mirror) 
-    
+    import mxnet as mx
+    bins, issame_list = pickle.load(open(path, 'rb'))
+    pos_img = []
+    neg_img = []
+    for i in xrange(len(issame_list)):
+        _bin = bins[i*2]
+        img1 = mx.image.imdecode(_bin)
+        _bin = bins[i*2+1]
+        img2 = mx.image.imdecode(_bin)
+        if issame_list[i]:
+            pos_img.append([img1, img2])
+        else:
+            neg_img.append([img2, img2])
+            
+    return pos_img, neg_img  
     
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -260,11 +175,13 @@ if __name__ == '__main__':
                                               ' AMSoftmax\n'
                                               ' arcface\n'
                                               ' yours \n')
+
     parser.add_argument("--dist_type", default='cosine', help="distance measure ['cosine', 'L2', 'SSD']")
     parser.add_argument("--do_mirror", default=False, help="mirror image and concatinate features")
 
     args = parser.parse_args()
     output_dir = '.'
+    
     # parse args   
     model_name = args.model_name
     test_set = args.test_set
@@ -274,10 +191,12 @@ if __name__ == '__main__':
     print('Testing  \t: %s' % model_name)
     print('Distance \t: %s' % dist_type)
     print('Do mirror\t: {}'.format(do_mirror))
+    
     # model
-    extractor, image_size = model_factory(model_name, do_mirror)
+    extractor, image_size = model_factory(model_name, '../models', do_mirror)
     print('Testing model\t: %s' % (extractor.weight))
     print('Image size\t: {}'.format(image_size))
+    
     # load images
     if args.data.find('.np') > 0:
         pos_img, neg_img = pickle.load(open(args.data, 'rb'))

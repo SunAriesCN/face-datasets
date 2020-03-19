@@ -5,12 +5,12 @@ import time
 sys.path.insert(0, '../facealign')
 sys.path.insert(0, '../util')  
 
-from fileutil import *
-from alignment import cv2_imread
-from matio import save_mat, load_mat
 import json
-import argparse
 import numpy as np
+
+from fileutil import *
+from config import Config
+from matio import load_mat
 
 def load_feature_list(rel_list, feature_dir, suffix):
     total_size = len(rel_list) 
@@ -76,6 +76,11 @@ def test_set(distractor_path, probe, feature_dir, suffix):
                 # make fullpath
                 feat_path = os.path.join(feature_dir, distractor_list[j])
                 feat_path = feat_path + suffix
+                
+                if not os.path.exists(feat_path):
+                    print("{} is not exists".format(feat_path))
+                    continue
+
                 feat = load_mat(feat_path)
                 dist = L2_distance(feat,probe_feat)
                 if dist < min_dist:
@@ -122,7 +127,7 @@ def test_set(distractor_path, probe, feature_dir, suffix):
             else:
                 wrong += 1
     rank1_ratio = float(correct)/(correct+wrong)
-    print('RandK-1:%f %d/%d' % (rank1_ratio, correct, (correct+wrong)))           
+    print('Rank-1:%f %d/%d' % (rank1_ratio, correct, (correct+wrong)))           
         
 if __name__=='__main__': 
     # config_file model_name
@@ -133,12 +138,8 @@ if __name__=='__main__':
     config = Config(sys.argv[1])
     distractors = sys.argv[2]
     # config
-    model_name = config.get('model').name
-    # load model
-    model = config.get(model_name).model
-    weights = config.get(model_name).weights
+    model_name = config.get('model').name 
     suffix = config.get(model_name).suffix
-    extractor = load_extractor(model, weights, config.get('model').gpu_id)
 
     # devkit/templatelists
     templatelists_dir = config.get('devkit').templatelists_dir
@@ -147,8 +148,8 @@ if __name__=='__main__':
     mega_feature_dir = config.get('megaface').feature_dir
     
     # devkit/templatelists
-    probe = load_probset(templatelists_dir+'/facescrub_uncropped_features_list.json',
+    probe = load_probset(os.path.join(templatelists_dir, 'facescrub_uncropped_features_list.json'),
       facescrub_feature_dir, suffix)
     list_name = 'megaface_features_list.json_%s_1' % distractors
-    test_set(templatelists_dir+'/' + list_name, probe, mega_feature_dir, suffix)
+    test_set(os.path.join(templatelists_dir, list_name), probe, mega_feature_dir, suffix)
     
