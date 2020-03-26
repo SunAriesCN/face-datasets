@@ -2,29 +2,32 @@
 import os,sys
 os.environ['GLOG_minloglevel'] = '2'  # Hide caffe debug info.
 
-import caffe  
 import cv2 as cv
 import numpy as np
 
+try:
+    import caffe
+except:
+    caffe = None
 
-class CaffeExtractor:
-    def __init__(self, model, weight,do_mirror=False, featLayer='fc5', gpu_id = 0):
-#        caffe.set_mode_gpu()
-#        caffe.set_device(gpu_id)
+class MobileID(object):
+    def __init__(self, model, weight,do_mirror=False, featLayer='ip3', gpu_id = 0):
 
         self.featLayer = featLayer
         self.model = model
         self.weight = weight
         self.do_mirror = do_mirror
         self.net = caffe.Net(model, weight, caffe.TEST)
-        
+
     @staticmethod
     def norm_image(_im):
-        #im = cv.cvtColor(im, cv.COLOR_RGB2BGR)
-        img32 = np.float32(_im)
-        #img = _im.astype(np.float32)
+        
+        im = cv.cvtColor(_im, cv.COLOR_BGR2RGB)
+        
+        img32 = cv.resize(im, (47,55)).astype('float32')
+        
         img = (img32 - 127.5) / 128
-        img = np.transpose(img, [2, 0, 1])
+        img = np.transpose(img32, [2, 0, 1])
         return img
 
     def extract_image(self, im):
@@ -51,5 +54,5 @@ class CaffeExtractor:
     def extract(self, img_path):
         im = cv.imread(img_path)
         return self.extract_feature(im)
-        
+    
     
