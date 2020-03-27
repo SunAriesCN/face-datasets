@@ -19,6 +19,9 @@ class MobileFaceNet(object):
     @staticmethod
     def norm_image(_im):
         
+        if _im.shape[0] != 112 or _im.shape[1] != 112:
+            _im = cv2.resize(_im, (112,112))
+        
         img32 = np.float32(_im)
         img = (img32 - 127.5) / 128
         return img

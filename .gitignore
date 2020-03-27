@@ -60,10 +60,12 @@ Desktop.ini
 # OSX dir files
 .DS_Store
 
-.prototxt
+# model files
 *.caffemodel
 *.tflite
+*.onnx
 
+# images
 *.jpg
 *.png
 

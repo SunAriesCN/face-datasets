@@ -14,6 +14,7 @@ if CaffeExtractor is None:
         
 from mobileid.mobile_id import MobileID
 from mobileface.mobilefacenet import MobileFaceNet
+from mobilefacesmall.mobilefacesmall import MobileFaceNetSmall
         
 def model_centerface(model_dir, do_mirror):
     model_dir = os.path.join(model_dir, 'centerface')
@@ -84,6 +85,13 @@ def model_yours(model_dir, do_mirror):
     extractor = CaffeExtractor(model_proto, model_path, do_mirror = do_mirror, featLayer='fc5')
     return extractor, image_size
 
+def model_mobilefacesmall(model_dir, do_mirror):
+    model_dir = os.path.join(model_dir, 'model-y1-test2')
+    model_path = os.path.join(model_dir, 'model-y1-test2.onnx')
+    image_size = (112, 112)
+    extractor = MobileFaceNetSmall(model_path)
+    return extractor, image_size
+
 def model_factory(name, model_dir, do_mirror=False):
     model_dict = {
         'centerface':model_centerface, 
@@ -91,6 +99,7 @@ def model_factory(name, model_dir, do_mirror=False):
         'AMSoftmax' :model_AMSoftmax, 
         'arcface'   :model_arcface,
         'mobileface':model_mobileface, 
+        'mobilefacesmall':model_mobilefacesmall,
         'lattemindface':model_lattemindface,
         'mobileid':model_mobileid,
         'yours'     :model_yours, 
