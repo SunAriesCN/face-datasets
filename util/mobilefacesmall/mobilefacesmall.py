@@ -39,8 +39,8 @@ class MobileFaceNetSmall(object):
         
         inputBlob = cv2.dnn.blobFromImage(image)
         self.net.setInput(inputBlob, "data")
-        embedding = self.net.forward(self.feature_layer).flatten()
-        embedding = normalize(embedding)
+        embedding = self.net.forward(self.feature_layer)
+        embedding = normalize(embedding).flatten()
         return embedding
     
     def extract_feature(self, im):
@@ -54,5 +54,15 @@ class MobileFaceNetSmall(object):
         return np.concatenate([feat1, feat2])
     
     def extract(self, img_path):
-        im = cv.imread(img_path)
+        im = cv2.imread(img_path)
         return self.extract_feature(im)
+    
+
+def unitest():
+    image_path = "./normed_croped.jpg"
+    extractor = MobileFaceNetSmall("../../models/model-y1-test2/model-y1-test2.onnx")
+    embedding = extractor.extract(image_path)
+    print(embedding[:10])
+    
+if __name__ == '__main__':
+    unitest()
